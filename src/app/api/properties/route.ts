@@ -37,7 +37,12 @@ export async function POST(req: Request) {
 		const property = await prisma.property.create({
 			data: {
 				...validatedData,
-				userId: session.user.id,
+				images: "[]", // Default empty images array
+				user: {
+					connect: {
+						id: session.user.id,
+					},
+				},
 				status: "AVAILABLE",
 			},
 		});
@@ -66,6 +71,7 @@ export async function GET(req: Request) {
 		const maxPrice = searchParams.get("maxPrice");
 		const bedrooms = searchParams.get("bedrooms");
 		const city = searchParams.get("city");
+		const limit = searchParams.get("limit");
 
 		const where: any = {
 			status: "AVAILABLE",
@@ -105,6 +111,7 @@ export async function GET(req: Request) {
 			orderBy: {
 				createdAt: "desc",
 			},
+			take: limit ? Number(limit) : undefined,
 		});
 
 		return NextResponse.json(properties);
