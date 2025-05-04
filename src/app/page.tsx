@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -40,8 +39,10 @@ export default function HomePage() {
 		type: "",
 		city: "",
 	});
+	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => {
+		setMounted(true);
 		const fetchFeaturedProperties = async () => {
 			try {
 				const response = await fetch("/api/properties?limit=3");
@@ -60,10 +61,16 @@ export default function HomePage() {
 
 	const handleSearch = () => {
 		const queryParams = new URLSearchParams();
-		if (searchParams.type) queryParams.append("type", searchParams.type);
+		if (searchParams.type && searchParams.type !== "ALL")
+			queryParams.append("type", searchParams.type);
 		if (searchParams.city) queryParams.append("city", searchParams.city);
 		window.location.href = `/properties?${queryParams.toString()}`;
 	};
+
+	// Prevent hydration mismatch by not rendering until mounted
+	if (!mounted) {
+		return null;
+	}
 
 	return (
 		<div className="flex flex-col min-h-[calc(100vh-4rem)]">
@@ -92,7 +99,9 @@ export default function HomePage() {
 									<SelectValue placeholder="Property Type" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="">All Types</SelectItem>
+									<SelectItem value="ALL">
+										All Types
+									</SelectItem>
 									<SelectItem value="HOUSE">House</SelectItem>
 									<SelectItem value="APARTMENT">
 										Apartment
